@@ -1,5 +1,5 @@
 {
-  "name": "@useastro/score-action",
+  "name": "@use-astro/score-action",
   "version": "1.0.0",
   "description": "Astro Score GitHub Action — production readiness checks on every pull request.",
   "private": true,
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/useastro/score-action.git"
+    "url": "git+https://github.com/use-astro/score-action.git"
   },
   "license": "MIT"
 }

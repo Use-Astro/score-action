@@ -31,7 +31,7 @@ The tagline is 51 characters, comfortably under the GitHub 64-character limit.
 
 Run through this before clicking publish.
 
-1. `useastro/score-action` repo exists on GitHub, public, with `main` as the default branch.
+1. `use-astro/score-action` repo exists on GitHub, public, with `main` as the default branch.
 2. The repo on GitHub matches the local `score-action/` working tree (push `main`).
 3. CI workflow `.github/workflows/test.yml` is green on `main`.
 4. `dist/index.js` is committed and current (`npm run build` produces no diff).
@@ -42,7 +42,7 @@ Run through this before clicking publish.
 9. On the repo page, click "Draft a release" or "Publish this Action to the GitHub Marketplace" depending on what GitHub surfaces. Accept the Marketplace developer agreement.
 10. Fill in the Marketplace fields above, attach a logo if requested, submit for review.
 
-GitHub typically reviews Marketplace listings within a few hours. The Action remains usable via `useastro/score-action@v1` regardless of Marketplace approval — the listing is for discovery, not for distribution.
+GitHub typically reviews Marketplace listings within a few hours. The Action remains usable via `use-astro/score-action@v1` regardless of Marketplace approval — the listing is for discovery, not for distribution.
 
 ## Post-publish smoke test
 
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: useastro/score-action@v1
+      - uses: use-astro/score-action@v1
 ```
 
 Confirm:

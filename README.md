@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: useastro/score-action@v1
+      - uses: use-astro/score-action@v1
 ```
 
 That is the whole install. The Action will check out your repo, run the 22 checks, and post a comment on the PR with the Score and the failing checks.
@@ -48,7 +48,7 @@ That is the whole install. The Action will check out your repo, run the 22 check
 ### Fail the build on a low Score
 
 ```yaml
-- uses: useastro/score-action@v1
+- uses: use-astro/score-action@v1
   with:
     fail-on-score-below: 60
 ```
@@ -59,7 +59,7 @@ The Action exits non-zero if the Score is below 60. Use this once you know your 
 
 ```yaml
 - id: score
-  uses: useastro/score-action@v1
+  uses: use-astro/score-action@v1
   with:
     comment-on-pr: false
 
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: useastro/score-action@v1
+      - uses: use-astro/score-action@v1
 ```
 
 Push runs do not post a PR comment (there is no PR), but they still set the `score` and `report-url` outputs.

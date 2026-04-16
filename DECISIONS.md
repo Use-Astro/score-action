@@ -4,7 +4,7 @@ id: SCO-rWmlvVjelw
 
 # Decisions
 
-Running log of architectural and scope decisions made while building `useastro/score-action`. Each entry documents the choice, the alternatives considered, and the reasoning, so future work can revisit with full context.
+Running log of architectural and scope decisions made while building `use-astro/score-action`. Each entry documents the choice, the alternatives considered, and the reasoning, so future work can revisit with full context.
 
 ---
 
@@ -67,13 +67,13 @@ GitHub Actions Node runners can resolve a committed `node_modules`, but the de f
 
 The brief preferred TypeScript. The score-api engine code is JavaScript (ESM, Node 20+). Translating the engine to TS adds zero functional value, doubles the maintenance surface for the months we run two copies, and risks introducing translation bugs.
 
-**Decision: keep the Action in plain ESM JavaScript so the engine port is byte-identical to the source.** When a shared `@useastro/score-engine` package ships and removes the duplication, we can revisit TypeScript.
+**Decision: keep the Action in plain ESM JavaScript so the engine port is byte-identical to the source.** When a shared `@use-astro/score-engine` package ships and removes the duplication, we can revisit TypeScript.
 
 ---
 
 ## 2026-04-16 — Engine duplication strategy: copy now, extract later
 
-The brief offered two paths for the engine: extract into a shared package (`packages/score-engine` workspace or separate `useastro/score-engine` repo) versus copy the checks directly into the Action and track drift manually.
+The brief offered two paths for the engine: extract into a shared package (`packages/score-engine` workspace or separate `use-astro/score-engine` repo) versus copy the checks directly into the Action and track drift manually.
 
 **Decision: copy the checks directly for v1.0.** The score-api engine has no entanglement with website-specific code beyond the file paths it imports. The relevant files (`checks/index.js`, `checks/context.js`, `checks/high-priority.js`, `checks/medium-priority.js`, `score-tiers.js`, plus the file-walker portion of `repo.js`) copy verbatim into `src/score-engine/`. A header comment in each ported file points to the canonical source so drift is obvious in code review.
 
