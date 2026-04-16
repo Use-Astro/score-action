@@ -1,0 +1,38 @@
+name: 'Astro Score'
+description: 'Production readiness checks on every pull request. 22 checks, 0-100 score, posted as a PR comment.'
+author: 'Astro'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  github-token:
+    description: 'Token used to post the PR comment. Defaults to the workflow''s github.token.'
+    required: false
+    default: ${{ github.token }}
+  fail-on-score-below:
+    description: 'Fail the workflow if the Score is below this number (0-100). 0 disables the gate. Default 0.'
+    required: false
+    default: '0'
+  comment-on-pr:
+    description: 'Post the Score as a PR comment (upserts on subsequent runs). Default true.'
+    required: false
+    default: 'true'
+  post-badge:
+    description: 'Reserved for v1.1. Has no effect in v1.0 — the badge endpoint is not live yet. Default false.'
+    required: false
+    default: 'false'
+  api-endpoint:
+    description: 'Reserved for v1.1 backend submission. Unused in v1.0.'
+    required: false
+    default: 'https://useastro.com'
+
+outputs:
+  score:
+    description: 'The overall Score (0-100).'
+  report-url:
+    description: 'A shareable URL to the full report for this repo.'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

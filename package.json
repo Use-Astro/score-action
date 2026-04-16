@@ -1,0 +1,29 @@
+{
+  "name": "@useastro/score-action",
+  "version": "1.0.0",
+  "description": "Astro Score GitHub Action — production readiness checks on every pull request.",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.js --out dist --source-map --license licenses.txt",
+    "lint": "node --check src/index.js src/comment.js src/score-engine/*.js src/score-engine/checks/*.js",
+    "test": "node --test test/*.test.js",
+    "prepare-release": "npm run lint && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/useastro/score-action.git"
+  },
+  "license": "MIT"
+}
