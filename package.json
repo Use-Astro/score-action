@@ -1,6 +1,6 @@
 {
   "name": "@use-astro/score-action",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Astro Score GitHub Action. Production readiness checks on every pull request.",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
     "@vercel/ncc": "^0.38.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
