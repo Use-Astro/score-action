@@ -1,5 +1,9 @@
 @actions/core
 MIT
+---
+id: SCO-dymszRDAgs
+---
+
 The MIT License (MIT)
 
 Copyright 2019 GitHub
@@ -12,6 +16,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 @actions/exec
 MIT
+---
+id: SCO-6RK8CoriTQ
+---
+
 The MIT License (MIT)
 
 Copyright 2019 GitHub
@@ -24,6 +32,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 @actions/github
 MIT
+---
+id: SCO-khZeLs0PI0
+---
+
 The MIT License (MIT)
 
 Copyright 2019 GitHub
@@ -61,6 +73,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @actions/io
 MIT
+---
+id: SCO-teKM9vtiTS
+---
+
 The MIT License (MIT)
 
 Copyright 2019 GitHub
@@ -560,6 +576,10 @@ SOFTWARE.
 
 universal-user-agent
 ISC
+---
+id: SCO-xTWn3d4Zhp
+---
+
 # [ISC License](https://spdx.org/licenses/ISC)
 
 Copyright (c) 2018, Gregor Martynus (https://github.com/gr2m)

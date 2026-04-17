@@ -33130,9 +33130,8 @@ function pickTopFindings(checks, count = 3) {
   return [...failedHigh, ...failedMedium].slice(0, count);
 }
 
-function renderComment({ score, summary, checks, owner, repo }) {
+function renderComment({ score, summary, checks, owner, repo, isPrivateRepo = false }) {
   const tier = tierMetaForScore(score);
-  const reportUrl = buildReportUrl(owner, repo);
   const topFindings = pickTopFindings(checks);
 
   const headline = `## Astro Score: ${score}/100`;
@@ -33148,7 +33147,10 @@ function renderComment({ score, summary, checks, owner, repo }) {
 
   const detailsBlock = `### All checks\n<details>\n<summary>22 checks run</summary>\n\n| Check | Result |\n|-------|--------|\n${tableRows}\n</details>`;
 
-  const footer = `[Full report →](${reportUrl}) · [What is Astro Score?](https://useastro.com/vibe-code-report/)`;
+  const aboutLink = `[What is Astro Score?](https://useastro.com/vibe-code-report/)`;
+  const footer = isPrivateRepo
+    ? aboutLink
+    : `[Full report →](${buildReportUrl(owner, repo)}) · ${aboutLink}`;
 
   return [headline, "", tierLine, "", findingsBlock, "", detailsBlock, "", footer, "", MARKER].join("\n");
 }
@@ -33212,6 +33214,7 @@ async function run() {
 
   const ctx = github.context;
   const { owner, repo } = ctx.repo;
+  const isPrivateRepo = ctx.payload?.repository?.private === true;
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
 
   core.info(`Astro Score scanning ${owner}/${repo} at ${workspace}`);
@@ -33234,7 +33237,7 @@ async function run() {
 
   core.info(`Astro Score: ${overallScore}/100 (${checks.filter((c) => c.status === "pass").length} pass, ${checks.filter((c) => c.status === "fail").length} fail, ${checks.filter((c) => c.status === "na").length} N/A) in ${scanDurationMs}ms`);
 
-  const reportUrl = buildReportUrl(owner, repo);
+  const reportUrl = isPrivateRepo ? "" : buildReportUrl(owner, repo);
   core.setOutput("score", String(overallScore));
   core.setOutput("report-url", reportUrl);
 
@@ -33242,7 +33245,7 @@ async function run() {
   if (commentOnPr && prNumber && token) {
     try {
       const octokit = github.getOctokit(token);
-      const body = renderComment({ score: overallScore, summary, checks, owner, repo });
+      const body = renderComment({ score: overallScore, summary, checks, owner, repo, isPrivateRepo });
       const result = await upsertComment({ octokit, owner, repo, prNumber, body });
       core.info(`PR comment ${result.action} (id ${result.commentId})`);
     } catch (error) {

@@ -20,9 +20,8 @@ function pickTopFindings(checks, count = 3) {
   return [...failedHigh, ...failedMedium].slice(0, count);
 }
 
-function renderComment({ score, summary, checks, owner, repo }) {
+function renderComment({ score, summary, checks, owner, repo, isPrivateRepo = false }) {
   const tier = tierMetaForScore(score);
-  const reportUrl = buildReportUrl(owner, repo);
   const topFindings = pickTopFindings(checks);
 
   const headline = `## Astro Score: ${score}/100`;
@@ -38,7 +37,10 @@ function renderComment({ score, summary, checks, owner, repo }) {
 
   const detailsBlock = `### All checks\n<details>\n<summary>22 checks run</summary>\n\n| Check | Result |\n|-------|--------|\n${tableRows}\n</details>`;
 
-  const footer = `[Full report →](${reportUrl}) · [What is Astro Score?](https://useastro.com/vibe-code-report/)`;
+  const aboutLink = `[What is Astro Score?](https://useastro.com/vibe-code-report/)`;
+  const footer = isPrivateRepo
+    ? aboutLink
+    : `[Full report →](${buildReportUrl(owner, repo)}) · ${aboutLink}`;
 
   return [headline, "", tierLine, "", findingsBlock, "", detailsBlock, "", footer, "", MARKER].join("\n");
 }

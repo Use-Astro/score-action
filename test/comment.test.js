@@ -56,3 +56,35 @@ test("renderComment top findings list omits passing and N/A checks", () => {
   assert.ok(!findingsSection.includes("No error boundaries"), "N/A checks should not appear in top findings");
   assert.ok(findingsSection.includes("No environment separation"), "high-priority failures should appear");
 });
+
+test("renderComment for a public repo includes the Full report link", () => {
+  const body = renderComment({
+    score: 62,
+    summary: "Public repo summary.",
+    checks: FIXTURE_CHECKS,
+    owner: "vercel",
+    repo: "next.js",
+    isPrivateRepo: false,
+  });
+
+  assert.ok(body.includes("useastro.com/score?repoUrl="), "public repo comment should include the report URL");
+  assert.ok(body.includes("[Full report →]"), "public repo comment should include the Full report link label");
+  assert.ok(body.includes("[What is Astro Score?](https://useastro.com/vibe-code-report/)"), "public repo comment should include the generic about link");
+  assert.ok(body.endsWith(MARKER), "public repo comment should end with the upsert marker");
+});
+
+test("renderComment for a private repo omits the Full report link", () => {
+  const body = renderComment({
+    score: 62,
+    summary: "Private repo summary.",
+    checks: FIXTURE_CHECKS,
+    owner: "acme",
+    repo: "private-thing",
+    isPrivateRepo: true,
+  });
+
+  assert.ok(!body.includes("useastro.com/score?repoUrl="), "private repo comment should NOT include the report URL");
+  assert.ok(!body.includes("[Full report →]"), "private repo comment should NOT include the Full report link label");
+  assert.ok(body.includes("[What is Astro Score?](https://useastro.com/vibe-code-report/)"), "private repo comment should still include the generic about link");
+  assert.ok(body.endsWith(MARKER), "private repo comment should end with the upsert marker");
+});

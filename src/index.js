@@ -25,6 +25,7 @@ async function run() {
 
   const ctx = github.context;
   const { owner, repo } = ctx.repo;
+  const isPrivateRepo = ctx.payload?.repository?.private === true;
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
 
   core.info(`Astro Score scanning ${owner}/${repo} at ${workspace}`);
@@ -47,7 +48,7 @@ async function run() {
 
   core.info(`Astro Score: ${overallScore}/100 (${checks.filter((c) => c.status === "pass").length} pass, ${checks.filter((c) => c.status === "fail").length} fail, ${checks.filter((c) => c.status === "na").length} N/A) in ${scanDurationMs}ms`);
 
-  const reportUrl = buildReportUrl(owner, repo);
+  const reportUrl = isPrivateRepo ? "" : buildReportUrl(owner, repo);
   core.setOutput("score", String(overallScore));
   core.setOutput("report-url", reportUrl);
 
@@ -55,7 +56,7 @@ async function run() {
   if (commentOnPr && prNumber && token) {
     try {
       const octokit = github.getOctokit(token);
-      const body = renderComment({ score: overallScore, summary, checks, owner, repo });
+      const body = renderComment({ score: overallScore, summary, checks, owner, repo, isPrivateRepo });
       const result = await upsertComment({ octokit, owner, repo, prNumber, body });
       core.info(`PR comment ${result.action} (id ${result.commentId})`);
     } catch (error) {
