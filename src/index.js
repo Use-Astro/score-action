@@ -35,7 +35,7 @@ async function run() {
     const reason = repoContext.detectedLanguage
       ? `dominant language detected: ${repoContext.detectedLanguage}`
       : "no JS/TS source files found";
-    core.warning(`Skipping Astro Score — ${reason}. Astro Score currently only scans JS/TS repos.`);
+    core.warning(`Skipping Astro Score. ${reason}. Astro Score currently only scans JS/TS repos.`);
     core.setOutput("score", "");
     core.setOutput("report-url", "");
     return;

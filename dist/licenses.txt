@@ -1,9 +1,5 @@
 @actions/core
 MIT
----
-id: SCO-ZDudPsYSd7
----
-
 The MIT License (MIT)
 
 Copyright 2019 GitHub
@@ -16,10 +12,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 @actions/exec
 MIT
----
-id: SCO-Trt1XAJvUJ
----
-
 The MIT License (MIT)
 
 Copyright 2019 GitHub
@@ -32,10 +24,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 @actions/github
 MIT
----
-id: SCO-alIdCryfU8
----
-
 The MIT License (MIT)
 
 Copyright 2019 GitHub

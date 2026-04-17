@@ -19,7 +19,7 @@ inputs:
     required: false
     default: 'true'
   post-badge:
-    description: 'Reserved for v1.1. Has no effect in v1.0 — the badge endpoint is not live yet. Default false.'
+    description: 'Reserved for v1.1. Has no effect in v1.0. The badge endpoint is not live yet. Default false.'
     required: false
     default: 'false'
   api-endpoint:

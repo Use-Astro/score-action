@@ -1,7 +1,7 @@
 {
   "name": "@use-astro/score-action",
-  "version": "1.0.0",
-  "description": "Astro Score GitHub Action — production readiness checks on every pull request.",
+  "version": "1.0.1",
+  "description": "Astro Score GitHub Action. Production readiness checks on every pull request.",
   "private": true,
   "type": "module",
   "main": "dist/index.js",

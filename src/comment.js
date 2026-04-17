@@ -29,7 +29,7 @@ function renderComment({ score, summary, checks, owner, repo }) {
   const tierLine = `**${tier.label}.** ${summary}`;
 
   const findingsBlock = topFindings.length > 0
-    ? `### Top findings\n${topFindings.map((c) => `- **${c.name}** — ${c.details}`).join("\n")}`
+    ? `### Top findings\n${topFindings.map((c) => `- **${c.name}**. ${c.details}`).join("\n")}`
     : "### Top findings\nNo failing checks.";
 
   const tableRows = checks

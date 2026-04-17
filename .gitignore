@@ -6,3 +6,6 @@ node_modules/
 coverage/
 .idea/
 .vscode/
+
+# Internal briefing doc, do not publish
+agent-brief.md

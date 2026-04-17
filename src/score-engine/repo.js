@@ -2,7 +2,7 @@
 //
 // The Action runs after `actions/checkout@v4` has already placed the repo on
 // disk, so all download/extract/S3 logic from the source has been removed.
-// Only the file-walker, file-reader, and package.json finder survive — these
+// Only the file-walker, file-reader, and package.json finder survive. These
 // are the entry points checks/context.js depends on. Limits and exclude lists
 // are kept identical to the source so file selection matches the web scanner.
 
@@ -164,7 +164,7 @@ function findPackageJson(dir) {
         }
       }
     } catch {
-      // Fall through — root package.json is still valid even if we can't parse workspaces
+      // Fall through. Root package.json is still valid even if we can't parse workspaces
     }
 
     return rootPkg;

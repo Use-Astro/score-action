@@ -1,5 +1,5 @@
 // Ported verbatim from Astro-Website/services/score-api/src/checks/context.js.
-// The only behavioral change is the import path for the file walker — the
+// The only behavioral change is the import path for the file walker. The
 // Action's stripped repo.js sits at ../repo.js relative to this file, the
 // same relative path as in the source. Framework detectors, glob matcher,
 // JS/TS gating logic, and helper signatures are identical to the source.

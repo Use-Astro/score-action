@@ -31703,7 +31703,7 @@ const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(impo
 //
 // The Action runs after `actions/checkout@v4` has already placed the repo on
 // disk, so all download/extract/S3 logic from the source has been removed.
-// Only the file-walker, file-reader, and package.json finder survive — these
+// Only the file-walker, file-reader, and package.json finder survive. These
 // are the entry points checks/context.js depends on. Limits and exclude lists
 // are kept identical to the source so file selection matches the web scanner.
 
@@ -31865,7 +31865,7 @@ function findPackageJson(dir) {
         }
       }
     } catch {
-      // Fall through — root package.json is still valid even if we can't parse workspaces
+      // Fall through. Root package.json is still valid even if we can't parse workspaces
     }
 
     return rootPkg;
@@ -31902,7 +31902,7 @@ function findPackageJson(dir) {
 
 ;// CONCATENATED MODULE: ./src/score-engine/checks/context.js
 // Ported verbatim from Astro-Website/services/score-api/src/checks/context.js.
-// The only behavioral change is the import path for the file walker — the
+// The only behavioral change is the import path for the file walker. The
 // Action's stripped repo.js sits at ../repo.js relative to this file, the
 // same relative path as in the source. Framework detectors, glob matcher,
 // JS/TS gating logic, and helper signatures are identical to the source.
@@ -33083,7 +33083,7 @@ function runAllChecks(ctx) {
         priority: def.priority,
         status: "error",
         passed: null,
-        details: "Unable to analyze — check could not be completed.",
+        details: "Unable to analyze. Check could not be completed.",
       });
     }
   }
@@ -33139,7 +33139,7 @@ function renderComment({ score, summary, checks, owner, repo }) {
   const tierLine = `**${tier.label}.** ${summary}`;
 
   const findingsBlock = topFindings.length > 0
-    ? `### Top findings\n${topFindings.map((c) => `- **${c.name}** — ${c.details}`).join("\n")}`
+    ? `### Top findings\n${topFindings.map((c) => `- **${c.name}**. ${c.details}`).join("\n")}`
     : "### Top findings\nNo failing checks.";
 
   const tableRows = checks
@@ -33222,7 +33222,7 @@ async function run() {
     const reason = repoContext.detectedLanguage
       ? `dominant language detected: ${repoContext.detectedLanguage}`
       : "no JS/TS source files found";
-    core.warning(`Skipping Astro Score — ${reason}. Astro Score currently only scans JS/TS repos.`);
+    core.warning(`Skipping Astro Score. ${reason}. Astro Score currently only scans JS/TS repos.`);
     core.setOutput("score", "");
     core.setOutput("report-url", "");
     return;

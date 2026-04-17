@@ -64,7 +64,7 @@ The Action exits non-zero if the Score is below 60. Use this once you know your 
     comment-on-pr: false
 
 - name: Print the Score
-  run: echo "Astro Score is ${{ steps.score.outputs.score }} — see ${{ steps.score.outputs.report-url }}"
+  run: echo "Astro Score is ${{ steps.score.outputs.score }}. See ${{ steps.score.outputs.report-url }}"
 ```
 
 ### Run on push to main as well
@@ -117,5 +117,5 @@ MIT. See [LICENSE](./LICENSE).
 
 ## Related
 
-- [useastro.com/score](https://useastro.com/score) — paste any GitHub URL, get the same Score in your browser.
-- [The Vibe Code Report](https://useastro.com/vibe-code-report/) — what we learned scanning 100,000 AI-generated repos.
+- [useastro.com/score](https://useastro.com/score). Paste any GitHub URL, get the same Score in your browser.
+- [The Vibe Code Report](https://useastro.com/vibe-code-report/). What we learned scanning 100,000 AI-generated repos.

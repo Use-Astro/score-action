@@ -8,7 +8,7 @@ Running log of architectural and scope decisions made while building `use-astro/
 
 ---
 
-## 2026-04-16 — Ship Model A for v1.0, layer Model C insights in v1.1
+## 2026-04-16: Ship Model A for v1.0, layer Model C insights in v1.1
 
 The brief asked the agent to evaluate three models for what the Action should compute:
 - **Model A:** identical to the 22-check web Score
@@ -31,7 +31,7 @@ Reasoning:
 
 ---
 
-## 2026-04-16 — No backend POST in v1.0; deterministic report URL
+## 2026-04-16: No backend POST in v1.0; deterministic report URL
 
 The brief specifies the Action should POST results to a backend so that `/score/report/[slug]/` URLs exist. As of today, per-slug report pages are not built (the website agent's `FindYourRepoSection.tsx` routes to `/score?repoUrl=...` instead) and no backend ingest endpoint for Action submissions has been specced.
 
@@ -47,7 +47,7 @@ This routes the user to the live web scanner, which will produce a fresh interac
 
 ---
 
-## 2026-04-16 — Email capture deferred to v1.1
+## 2026-04-16: Email capture deferred to v1.1
 
 The brief proposed Path A (CTA in the PR comment linking to `useastro.com/action/claim/[token]`) for first-install email capture. That endpoint does not exist yet, and adding a "claim your install" line to the PR comment without a working destination would be visibly broken.
 
@@ -55,7 +55,7 @@ The brief proposed Path A (CTA in the PR comment linking to `useastro.com/action
 
 ---
 
-## 2026-04-16 — Bundling: `@vercel/ncc` to `dist/index.js`
+## 2026-04-16: Bundling: `@vercel/ncc` to `dist/index.js`
 
 GitHub Actions Node runners can resolve a committed `node_modules`, but the de facto standard for distributed Actions is to bundle the entrypoint into a single file (typically with `@vercel/ncc`) and commit only `dist/`. This keeps the repo small, makes the runtime deterministic, and matches what the GitHub Marketplace expects.
 
@@ -63,7 +63,7 @@ GitHub Actions Node runners can resolve a committed `node_modules`, but the de f
 
 ---
 
-## 2026-04-16 — Language: ES module JavaScript, not TypeScript
+## 2026-04-16: Language: ES module JavaScript, not TypeScript
 
 The brief preferred TypeScript. The score-api engine code is JavaScript (ESM, Node 20+). Translating the engine to TS adds zero functional value, doubles the maintenance surface for the months we run two copies, and risks introducing translation bugs.
 
@@ -71,7 +71,7 @@ The brief preferred TypeScript. The score-api engine code is JavaScript (ESM, No
 
 ---
 
-## 2026-04-16 — Engine duplication strategy: copy now, extract later
+## 2026-04-16: Engine duplication strategy: copy now, extract later
 
 The brief offered two paths for the engine: extract into a shared package (`packages/score-engine` workspace or separate `use-astro/score-engine` repo) versus copy the checks directly into the Action and track drift manually.
 

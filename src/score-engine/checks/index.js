@@ -87,7 +87,7 @@ function runAllChecks(ctx) {
         priority: def.priority,
         status: "error",
         passed: null,
-        details: "Unable to analyze — check could not be completed.",
+        details: "Unable to analyze. Check could not be completed.",
       });
     }
   }
