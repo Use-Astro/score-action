@@ -8,6 +8,16 @@ Running log of architectural and scope decisions made while building `use-astro/
 
 ---
 
+## 2026-10-01: D-191 4.10 — Scan all Prisma schema files
+
+**Decision:** Both the index and cross-tenant checks discover every `*.prisma` file under the existing scanner directory and symlink exclusions, rather than only files named `schema.prisma`. Schema files bypass the generic per-file, file-count, and aggregate-byte limits and are read without truncation, so large generated schemas and models at the end of a file are checked.
+
+The checks share model discovery and deduplicate by model name, keeping the first definition encountered. Generated concatenations that repeat source models therefore produce one set of findings. Index coverage is model-local: `User.email @unique` does not cover an unindexed `Contact.email`. Missing-index details identify the model and field.
+
+This intentionally updates the earlier byte-identical port policy for Prisma discovery and index coverage; the 22-check rubric is unchanged. No Prisma parser dependency is added. Regression tests cover multi-file detection, a 110 KB schema, duplicate concatenations, and existing exclusions/index annotations. The shipped `dist` bundle is rebuilt with the change.
+
+---
+
 ## 2026-04-16: Ship Model A for v1.0, layer Model C insights in v1.1
 
 The brief asked the agent to evaluate three models for what the Action should compute:

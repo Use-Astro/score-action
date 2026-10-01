@@ -1,7 +1,10 @@
-// Ported verbatim from Astro-Website/services/score-api/src/checks/medium-priority.js.
+// Adapted from Astro-Website/services/score-api/src/checks/medium-priority.js.
+// D-191 4.10 checks indexes per model across all Prisma schema files.
 // The source file also exports checkNoReusableComponents and checkNoUiDesignSystem
 // which are not registered in the 22-check rubric. They are kept here so a diff
-// against the source stays clean during the byte-identical-port phase.
+// against the source stays small.
+
+import { getPrismaModels } from "./context.js";
 
 export function checkNoCiCd(ctx) {
   const ciFiles = [
@@ -109,35 +112,36 @@ export function checkMissingLockfile(ctx) {
 }
 
 export function checkMissingDbIndexes(ctx) {
-  const prismaSchemaFiles = ctx.findFiles("**/schema.prisma");
-  if (prismaSchemaFiles.length === 0) {
-    return { passed: true, notApplicable: true, details: "No Prisma schema found." };
+  const models = getPrismaModels(ctx);
+  if (models.length === 0) {
+    return { passed: true, notApplicable: true, details: "No Prisma models found." };
   }
 
-  const schemaContent = prismaSchemaFiles.map((f) => f.content).join("\n");
   const hotFields = ["userId", "tenantId", "orgId", "status", "createdAt", "email"];
-  const usedHotFields = hotFields.filter((field) => schemaContent.includes(field));
-
-  if (usedHotFields.length === 0) {
-    return { passed: true, details: "No frequently-filtered fields detected in schema." };
-  }
-
-  const indexMatches = schemaContent.match(/@@index\(\[([^\]]+)\]/g) ?? [];
-  const uniqueMatches = schemaContent.match(/@@unique\(\[([^\]]+)\]/g) ?? [];
-  const indexedFields = [...indexMatches, ...uniqueMatches].join(" ");
-
-  const fieldLines = schemaContent.split("\n");
-  const inlineIndexedFields = new Set();
-  for (const line of fieldLines) {
-    const fieldMatch = line.match(/^\s+(\w+)\s+\w+.*(?:@id|@unique)/);
-    if (fieldMatch) {
-      inlineIndexedFields.add(fieldMatch[1]);
+  const unindexedHotFields = [];
+  let hasHotFields = false;
+  for (const model of models) {
+    const fieldLines = model.content.split("\n");
+    const usedHotFields = hotFields.filter((field) =>
+      fieldLines.some((line) => new RegExp(`^\\s*${field}\\s+\\w`).test(line)),
+    );
+    hasHotFields ||= usedHotFields.length > 0;
+    const indexedFields = (model.content.match(/@@(?:index|unique|id)\s*\(\s*\[([^\]]+)\]/g) ?? []).join(" ");
+    const inlineIndexedFields = new Set();
+    for (const line of fieldLines) {
+      const fieldMatch = line.match(/^\s*(\w+)\s+\w+.*(?:@id\b|@unique\b)/);
+      if (fieldMatch) inlineIndexedFields.add(fieldMatch[1]);
+    }
+    for (const field of usedHotFields) {
+      if (!new RegExp(`\\b${field}\\b`).test(indexedFields) && !inlineIndexedFields.has(field)) {
+        unindexedHotFields.push(`${model.name}.${field}`);
+      }
     }
   }
 
-  const unindexedHotFields = usedHotFields.filter(
-    (field) => !indexedFields.includes(field) && !inlineIndexedFields.has(field),
-  );
+  if (!hasHotFields) {
+    return { passed: true, details: "No frequently-filtered fields detected in schema." };
+  }
 
   if (unindexedHotFields.length === 0) {
     return { passed: true, details: "Index annotations cover hot filter fields in Prisma schema." };

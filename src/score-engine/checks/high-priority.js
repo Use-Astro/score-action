@@ -1,7 +1,7 @@
-// Ported verbatim from Astro-Website/services/score-api/src/checks/high-priority.js.
-// All check signatures, regexes, and details strings must stay byte-identical
-// to the source so the Action and the web scanner classify the same code the
-// same way. If a check changes here, change it in the source first and copy.
+// Adapted from Astro-Website/services/score-api/src/checks/high-priority.js.
+// D-191 4.10 adds shared multi-file Prisma model discovery to check 10.
+
+import { getPrismaModels } from "./context.js";
 
 // Check 1: JWT in localStorage
 export function checkJwtInLocalStorage(ctx) {
@@ -297,12 +297,12 @@ export function checkMissingApiAuthGuards(ctx) {
 
 // Check 10: Cross-tenant query leakage
 export function checkCrossTenantLeakage(ctx) {
-  const prismaSchemaFiles = ctx.findFiles("**/schema.prisma");
-  if (prismaSchemaFiles.length === 0) {
-    return { passed: true, notApplicable: true, details: "No Prisma schema found." };
+  const models = getPrismaModels(ctx);
+  if (models.length === 0) {
+    return { passed: true, notApplicable: true, details: "No Prisma models found." };
   }
 
-  const schemaContent = prismaSchemaFiles.map((f) => f.content).join("\n");
+  const schemaContent = models.map((model) => model.content).join("\n");
   const tenantFields = ["tenantId", "orgId", "organizationId", "workspaceId", "teamId"];
   const hasTenantField = tenantFields.some((field) => schemaContent.includes(field));
 

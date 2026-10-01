@@ -31705,7 +31705,7 @@ const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(impo
 // disk, so all download/extract/S3 logic from the source has been removed.
 // Only the file-walker, file-reader, and package.json finder survive. These
 // are the entry points checks/context.js depends on. Limits and exclude lists
-// are kept identical to the source so file selection matches the web scanner.
+// match the source, except Prisma schemas bypass text-file scan limits.
 
 
 
@@ -31746,11 +31746,6 @@ function getRepoFiles(dir) {
   let truncated = false;
 
   function walk(currentDir) {
-    if (files.length >= MAX_FILE_COUNT) {
-      truncated = true;
-      return;
-    }
-
     let entries;
     try {
       entries = (0,external_node_fs_namespaceObject.readdirSync)(currentDir, { withFileTypes: true });
@@ -31759,10 +31754,6 @@ function getRepoFiles(dir) {
     }
 
     for (const entry of entries) {
-      if (files.length >= MAX_FILE_COUNT) {
-        return;
-      }
-
       const fullPath = (0,external_node_path_namespaceObject.join)(currentDir, entry.name);
       const relativePath = (0,external_node_path_namespaceObject.relative)(resolvedDir, fullPath);
 
@@ -31788,15 +31779,17 @@ function getRepoFiles(dir) {
         continue;
       }
 
-      if (stat.size > MAX_FILE_SIZE) {
-        continue;
+      // Keep discovering schemas even after ordinary source scan limits are hit.
+      if ((0,external_node_path_namespaceObject.extname)(entry.name) !== ".prisma") {
+        if (files.length >= MAX_FILE_COUNT) {
+          truncated = true;
+          continue;
+        }
+        if (stat.size > MAX_FILE_SIZE || aggregateBytes >= MAX_AGGREGATE_BYTES) {
+          continue;
+        }
+        aggregateBytes += stat.size;
       }
-
-      if (aggregateBytes >= MAX_AGGREGATE_BYTES) {
-        continue;
-      }
-
-      aggregateBytes += stat.size;
 
       files.push({
         relativePath,
@@ -31818,7 +31811,7 @@ function getRepoFiles(dir) {
   return files;
 }
 
-function readRepoFile(filePath, maxBytes = MAX_FILE_SIZE) {
+function readRepoFile(filePath, maxBytes = (0,external_node_path_namespaceObject.extname)(filePath) === ".prisma" ? Infinity : MAX_FILE_SIZE) {
   try {
     const buffer = (0,external_node_fs_namespaceObject.readFileSync)(filePath);
     if (buffer.length > maxBytes) {
@@ -31901,11 +31894,9 @@ function findPackageJson(dir) {
 
 
 ;// CONCATENATED MODULE: ./src/score-engine/checks/context.js
-// Ported verbatim from Astro-Website/services/score-api/src/checks/context.js.
-// The only behavioral change is the import path for the file walker. The
-// Action's stripped repo.js sits at ../repo.js relative to this file, the
-// same relative path as in the source. Framework detectors, glob matcher,
-// JS/TS gating logic, and helper signatures are identical to the source.
+// Adapted from Astro-Website/services/score-api/src/checks/context.js.
+// Adds shared Prisma model discovery for multi-file and generated schemas.
+// Framework detectors, glob matcher, and JS/TS gating match the source.
 
 
 
@@ -32023,6 +32014,21 @@ function makeGlobMatcher(globPattern) {
     .replace(/\{\{GLOBSTAR\}\}/g, ".*");
 
   return new RegExp(`^${escaped}$`);
+}
+
+function getPrismaModels(ctx) {
+  const models = new Map();
+  for (const file of ctx.findFiles("**/*.prisma")) {
+    const content = file.content.replace(/"(?:\\.|[^"\\])*"|\/\/[^\n]*/g, (token) => token.startsWith("//") ? "" : token);
+    // ponytail: flat model blocks; use a Prisma parser if nested syntax is introduced.
+    for (const match of content.matchAll(/(?:^|\n)\s*model\s+(\w+)\s*\{((?:"(?:\\.|[^"\\])*"|[^}"])*)\}/g)) {
+      // Generated concatenations repeat source models; inspect each name once.
+      if (!models.has(match[1])) {
+        models.set(match[1], { name: match[1], content: match[2] });
+      }
+    }
+  }
+  return [...models.values()];
 }
 
 async function buildRepoContext(extractDir) {
@@ -32157,10 +32163,10 @@ async function buildRepoContext(extractDir) {
 
 
 ;// CONCATENATED MODULE: ./src/score-engine/checks/high-priority.js
-// Ported verbatim from Astro-Website/services/score-api/src/checks/high-priority.js.
-// All check signatures, regexes, and details strings must stay byte-identical
-// to the source so the Action and the web scanner classify the same code the
-// same way. If a check changes here, change it in the source first and copy.
+// Adapted from Astro-Website/services/score-api/src/checks/high-priority.js.
+// D-191 4.10 adds shared multi-file Prisma model discovery to check 10.
+
+
 
 // Check 1: JWT in localStorage
 function checkJwtInLocalStorage(ctx) {
@@ -32456,12 +32462,12 @@ function checkMissingApiAuthGuards(ctx) {
 
 // Check 10: Cross-tenant query leakage
 function checkCrossTenantLeakage(ctx) {
-  const prismaSchemaFiles = ctx.findFiles("**/schema.prisma");
-  if (prismaSchemaFiles.length === 0) {
-    return { passed: true, notApplicable: true, details: "No Prisma schema found." };
+  const models = getPrismaModels(ctx);
+  if (models.length === 0) {
+    return { passed: true, notApplicable: true, details: "No Prisma models found." };
   }
 
-  const schemaContent = prismaSchemaFiles.map((f) => f.content).join("\n");
+  const schemaContent = models.map((model) => model.content).join("\n");
   const tenantFields = ["tenantId", "orgId", "organizationId", "workspaceId", "teamId"];
   const hasTenantField = tenantFields.some((field) => schemaContent.includes(field));
 
@@ -32785,10 +32791,13 @@ function checkInsecureCookieSession(ctx) {
 }
 
 ;// CONCATENATED MODULE: ./src/score-engine/checks/medium-priority.js
-// Ported verbatim from Astro-Website/services/score-api/src/checks/medium-priority.js.
+// Adapted from Astro-Website/services/score-api/src/checks/medium-priority.js.
+// D-191 4.10 checks indexes per model across all Prisma schema files.
 // The source file also exports checkNoReusableComponents and checkNoUiDesignSystem
 // which are not registered in the 22-check rubric. They are kept here so a diff
-// against the source stays clean during the byte-identical-port phase.
+// against the source stays small.
+
+
 
 function checkNoCiCd(ctx) {
   const ciFiles = [
@@ -32896,35 +32905,36 @@ function checkMissingLockfile(ctx) {
 }
 
 function checkMissingDbIndexes(ctx) {
-  const prismaSchemaFiles = ctx.findFiles("**/schema.prisma");
-  if (prismaSchemaFiles.length === 0) {
-    return { passed: true, notApplicable: true, details: "No Prisma schema found." };
+  const models = getPrismaModels(ctx);
+  if (models.length === 0) {
+    return { passed: true, notApplicable: true, details: "No Prisma models found." };
   }
 
-  const schemaContent = prismaSchemaFiles.map((f) => f.content).join("\n");
   const hotFields = ["userId", "tenantId", "orgId", "status", "createdAt", "email"];
-  const usedHotFields = hotFields.filter((field) => schemaContent.includes(field));
-
-  if (usedHotFields.length === 0) {
-    return { passed: true, details: "No frequently-filtered fields detected in schema." };
-  }
-
-  const indexMatches = schemaContent.match(/@@index\(\[([^\]]+)\]/g) ?? [];
-  const uniqueMatches = schemaContent.match(/@@unique\(\[([^\]]+)\]/g) ?? [];
-  const indexedFields = [...indexMatches, ...uniqueMatches].join(" ");
-
-  const fieldLines = schemaContent.split("\n");
-  const inlineIndexedFields = new Set();
-  for (const line of fieldLines) {
-    const fieldMatch = line.match(/^\s+(\w+)\s+\w+.*(?:@id|@unique)/);
-    if (fieldMatch) {
-      inlineIndexedFields.add(fieldMatch[1]);
+  const unindexedHotFields = [];
+  let hasHotFields = false;
+  for (const model of models) {
+    const fieldLines = model.content.split("\n");
+    const usedHotFields = hotFields.filter((field) =>
+      fieldLines.some((line) => new RegExp(`^\\s*${field}\\s+\\w`).test(line)),
+    );
+    hasHotFields ||= usedHotFields.length > 0;
+    const indexedFields = (model.content.match(/@@(?:index|unique|id)\s*\(\s*\[([^\]]+)\]/g) ?? []).join(" ");
+    const inlineIndexedFields = new Set();
+    for (const line of fieldLines) {
+      const fieldMatch = line.match(/^\s*(\w+)\s+\w+.*(?:@id\b|@unique\b)/);
+      if (fieldMatch) inlineIndexedFields.add(fieldMatch[1]);
+    }
+    for (const field of usedHotFields) {
+      if (!new RegExp(`\\b${field}\\b`).test(indexedFields) && !inlineIndexedFields.has(field)) {
+        unindexedHotFields.push(`${model.name}.${field}`);
+      }
     }
   }
 
-  const unindexedHotFields = usedHotFields.filter(
-    (field) => !indexedFields.includes(field) && !inlineIndexedFields.has(field),
-  );
+  if (!hasHotFields) {
+    return { passed: true, details: "No frequently-filtered fields detected in schema." };
+  }
 
   if (unindexedHotFields.length === 0) {
     return { passed: true, details: "Index annotations cover hot filter fields in Prisma schema." };
