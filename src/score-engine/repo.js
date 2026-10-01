@@ -4,7 +4,7 @@
 // disk, so all download/extract/S3 logic from the source has been removed.
 // Only the file-walker, file-reader, and package.json finder survive. These
 // are the entry points checks/context.js depends on. Limits and exclude lists
-// are kept identical to the source so file selection matches the web scanner.
+// match the source, except Prisma schemas bypass text-file scan limits.
 
 import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve, relative, extname } from "node:path";
@@ -45,11 +45,6 @@ function getRepoFiles(dir) {
   let truncated = false;
 
   function walk(currentDir) {
-    if (files.length >= MAX_FILE_COUNT) {
-      truncated = true;
-      return;
-    }
-
     let entries;
     try {
       entries = readdirSync(currentDir, { withFileTypes: true });
@@ -58,10 +53,6 @@ function getRepoFiles(dir) {
     }
 
     for (const entry of entries) {
-      if (files.length >= MAX_FILE_COUNT) {
-        return;
-      }
-
       const fullPath = join(currentDir, entry.name);
       const relativePath = relative(resolvedDir, fullPath);
 
@@ -87,15 +78,17 @@ function getRepoFiles(dir) {
         continue;
       }
 
-      if (stat.size > MAX_FILE_SIZE) {
-        continue;
+      // Keep discovering schemas even after ordinary source scan limits are hit.
+      if (extname(entry.name) !== ".prisma") {
+        if (files.length >= MAX_FILE_COUNT) {
+          truncated = true;
+          continue;
+        }
+        if (stat.size > MAX_FILE_SIZE || aggregateBytes >= MAX_AGGREGATE_BYTES) {
+          continue;
+        }
+        aggregateBytes += stat.size;
       }
-
-      if (aggregateBytes >= MAX_AGGREGATE_BYTES) {
-        continue;
-      }
-
-      aggregateBytes += stat.size;
 
       files.push({
         relativePath,
@@ -117,7 +110,7 @@ function getRepoFiles(dir) {
   return files;
 }
 
-function readRepoFile(filePath, maxBytes = MAX_FILE_SIZE) {
+function readRepoFile(filePath, maxBytes = extname(filePath) === ".prisma" ? Infinity : MAX_FILE_SIZE) {
   try {
     const buffer = readFileSync(filePath);
     if (buffer.length > maxBytes) {

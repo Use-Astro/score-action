@@ -105,6 +105,10 @@ The same rubric as the public scanner:
 
 The full list and methodology lives at [useastro.com/vibe-code-report/#methodology](https://useastro.com/vibe-code-report/#methodology).
 
+Prisma index and tenant checks read all `*.prisma` files, including multi-file schemas such as `prisma/schema/*.prisma` and per-domain files. Models are combined across files and deduplicated by model name (the first definition is checked), so a generated concatenation and its source files do not repeat findings. Indexes are checked within each model; an index on another model does not cover a missing index.
+
+Prisma files are read in full and exempt from the scanner's 102,400-byte file limit, file-count limit, and aggregate-byte limit. Existing directory exclusions (including `node_modules`, `dist`, and `build`) and symlink exclusions still apply.
+
 ## Supported projects
 
 JavaScript and TypeScript repos. The Action detects the framework (Next.js, Remix, SvelteKit, Nuxt, Astro, Express, Hono, Fastify, NestJS, and more) and adjusts the relevant checks.

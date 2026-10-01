@@ -1,8 +1,6 @@
-// Ported verbatim from Astro-Website/services/score-api/src/checks/context.js.
-// The only behavioral change is the import path for the file walker. The
-// Action's stripped repo.js sits at ../repo.js relative to this file, the
-// same relative path as in the source. Framework detectors, glob matcher,
-// JS/TS gating logic, and helper signatures are identical to the source.
+// Adapted from Astro-Website/services/score-api/src/checks/context.js.
+// Adds shared Prisma model discovery for multi-file and generated schemas.
+// Framework detectors, glob matcher, and JS/TS gating match the source.
 
 import { existsSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
@@ -120,6 +118,21 @@ function makeGlobMatcher(globPattern) {
     .replace(/\{\{GLOBSTAR\}\}/g, ".*");
 
   return new RegExp(`^${escaped}$`);
+}
+
+function getPrismaModels(ctx) {
+  const models = new Map();
+  for (const file of ctx.findFiles("**/*.prisma")) {
+    const content = file.content.replace(/"(?:\\.|[^"\\])*"|\/\/[^\n]*/g, (token) => token.startsWith("//") ? "" : token);
+    // ponytail: flat model blocks; use a Prisma parser if nested syntax is introduced.
+    for (const match of content.matchAll(/(?:^|\n)\s*model\s+(\w+)\s*\{((?:"(?:\\.|[^"\\])*"|[^}"])*)\}/g)) {
+      // Generated concatenations repeat source models; inspect each name once.
+      if (!models.has(match[1])) {
+        models.set(match[1], { name: match[1], content: match[2] });
+      }
+    }
+  }
+  return [...models.values()];
 }
 
 async function buildRepoContext(extractDir) {
@@ -255,6 +268,7 @@ export {
   buildRepoContext,
   detectFramework,
   getDeps,
+  getPrismaModels,
   isSourceFile,
   makeGlobMatcher,
 };
