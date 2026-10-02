@@ -73,6 +73,59 @@ test("runAllChecks rejects a Rust repo as not JS/TS", async () => {
   }
 });
 
+// Foundation's JWT wrappers from core/presentation/auth/config/decorators.
+for (const decorator of ["Auth", "AuthOnly", "ElevatedAuth", "RecoveryCodesRegenAuth"]) {
+  test(`API auth guards recognize Foundation @${decorator}()`, async () => {
+    const dir = makeFixtureRepo({
+      "src/auth.decorator.ts": `import { applyDecorators, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './jwt-auth.guard';
+export function ${decorator}() {
+  return applyDecorators(UseGuards(JwtAuthGuard));
+}`,
+      "src/items.controller.ts": `import { Controller, Post } from '@nestjs/common';
+import { ${decorator} } from './auth.decorator';
+@Controller('items')
+export class ItemsController {
+  @Post()
+  @${decorator}()
+  create() { return {}; }
+}`,
+    });
+
+    try {
+      const result = runAllChecks(await buildRepoContext(dir));
+      assert.equal(result.checks.find((c) => c.id === 9).status, "pass");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+}
+
+for (const decorator of ["", "@Audit()", "@CustomAuth()", "@NotAuthOnly()", "@AuthOnlyExtra()"]) {
+  test(`API auth guards reject an unguarded route ${decorator}`, async () => {
+    const dir = makeFixtureRepo({
+      "src/items.controller.ts": `import { Controller, Post } from '@nestjs/common';
+import { AuthOnly } from './auth.decorator';
+@Controller('items')
+export class ItemsController {
+  @Post()
+  ${decorator}
+  create() { return {}; }
+}`,
+      "src/auth.decorator.ts": `export function AuthOnly() {
+  return applyDecorators(UseGuards(JwtAuthGuard));
+}`,
+    });
+
+    try {
+      const result = runAllChecks(await buildRepoContext(dir));
+      assert.equal(result.checks.find((c) => c.id === 9).status, "fail");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+}
+
 const indexedUser = `model User {
   id String @id
   email String @unique
