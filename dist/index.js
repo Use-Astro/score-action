@@ -32436,11 +32436,13 @@ function checkMissingApiAuthGuards(ctx) {
     return { passed: true, notApplicable: true, details: "No API mutation handlers detected." };
   }
 
-  const authPatterns = /auth\(|getServerSession|getSession|requireAuth|@UseGuards|AuthGuard|middleware.*auth|isAuthenticated|verifyToken|jwt\.verify|clerkMiddleware|withAuth|currentUser|getKindeServerSession|authkitMiddleware|validateRequest|protectedProcedure|ctx\.auth/i;
+  const authPatterns = /\bauth\(|getServerSession|getSession|requireAuth|@UseGuards|AuthGuard|middleware.*auth|isAuthenticated|verifyToken|jwt\.verify|clerkMiddleware|withAuth|currentUser|getKindeServerSession|authkitMiddleware|validateRequest|protectedProcedure|ctx\.auth/i;
+  // Verified JWT wrappers in Foundation's auth/config/decorators; no arbitrary decorator names.
+  const foundationAuthPattern = /@(?:Auth|AuthOnly|ElevatedAuth|RecoveryCodesRegenAuth)\s*\(/;
 
   const publicEndpointPatterns = /webhook|health|public|cron|__internal/i;
   const unguardedFiles = apiFiles.filter((f) =>
-    !authPatterns.test(f.content) && !publicEndpointPatterns.test(f.relativePath),
+    !authPatterns.test(f.content) && !foundationAuthPattern.test(f.content) && !publicEndpointPatterns.test(f.relativePath),
   );
 
   if (unguardedFiles.length === 0) {
