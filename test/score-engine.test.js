@@ -222,3 +222,22 @@ model Session {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("check 20 accepts Bun's text lockfile (bun.lock) as well as bun.lockb", async () => {
+  for (const lockfile of ["bun.lock", "bun.lockb"]) {
+    const dir = makeFixtureRepo({
+      "package.json": JSON.stringify({ name: "fixture-bun", dependencies: { react: "^18.0.0" } }),
+      [lockfile]: "{}",
+      "src/index.ts": "export const a = 1;",
+      "src/b.ts": "export const b = 2;",
+      "src/c.ts": "export const c = 3;",
+    });
+    try {
+      const result = runAllChecks(await buildRepoContext(dir));
+      const lockCheck = result.checks.find((c) => c.id === 20);
+      assert.equal(lockCheck.status, "pass", `${lockfile} should satisfy check 20`);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+});

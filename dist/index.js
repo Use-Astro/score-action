@@ -32892,7 +32892,7 @@ function checkNoUiDesignSystem(ctx) {
 }
 
 function checkMissingLockfile(ctx) {
-  const lockfiles = ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lockb"];
+  const lockfiles = ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lock", "bun.lockb"];
 
   for (const lockfile of lockfiles) {
     if (ctx.hasFile(lockfile)) {
